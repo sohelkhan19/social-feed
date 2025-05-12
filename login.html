@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login - Social Feed</title>
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <h1>Login to Social Feed</h1>
+  <input type="email" id="login-email" placeholder="Email">
+  <input type="password" id="login-password" placeholder="Password">
+  <button onclick="handleLogin()">Login</button>
+  <p>Don't have an account? <a href="register.html">Register here</a></p>
+
+  <script type="module">
+    import { login } from './scripts/auth.js';
+
+    window.handleLogin = async () => {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      try {
+        const user = await login(email, password);
+        alert(`Welcome, ${user.email}`);
+        window.location.href = 'index.html';
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+  </script>
+</body>
+</html>

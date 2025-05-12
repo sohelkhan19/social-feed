@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register - Social Feed</title>
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <h1>Register for Social Feed</h1>
+  <input type="email" id="signup-email" placeholder="Email">
+  <input type="password" id="signup-password" placeholder="Password">
+  <button onclick="handleSignup()">Register</button>
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+
+  <script type="module">
+    import { signup } from './scripts/auth.js';
+
+    window.handleSignup = async () => {
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      try {
+        const user = await signup(email, password);
+        alert(`Account created for ${user.email}`);
+        window.location.href = 'index.html';
+      } catch (e) {
+        alert(e.message);
+      }
+    };
+  </script>
+</body>
+</html>
