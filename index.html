@@ -3,29 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <title>Home - Social Feed</title>
-  <link rel="stylesheet" href="./styles/style.css">
+  <link rel="stylesheet" href="styles/style.css">
 </head>
 <body>
-  <h1>Welcome to Social Feed</h1>
-  <p>This is the home feed. (Coming soon...)</p>
+  <h2>Welcome to Social Feed</h2>
+
+  <div id="user-info"></div>
   <button onclick="logout()">Logout</button>
 
-  <script type="module">
-    import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-    import app from './scripts/firebase-config.js';
+  <hr>
 
-    const auth = getAuth(app);
+  <h3>Create Post</h3>
+  <textarea id="post-text" placeholder="What's on your mind?" rows="3" cols="40"></textarea><br>
+  <input type="file" id="post-image"><br>
+  <button onclick="submitPost()">Post</button>
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        window.location.href = "login.html";
-      }
-    });
+  <hr>
 
-    window.logout = async () => {
-      await signOut(auth);
-      window.location.href = "login.html";
-    };
-  </script>
+  <h3>Feed</h3>
+  <div id="feed"></div>
+
+  <script type="module" src="./scripts/post.js"></script>
+
 </body>
 </html>

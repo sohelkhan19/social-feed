@@ -1,5 +1,5 @@
 // scripts/auth.js
-import app from './firebase-config.js';
+import app from './firebase.js';
 import {
   getAuth,
   createUserWithEmailAndPassword,
