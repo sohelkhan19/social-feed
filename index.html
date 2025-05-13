@@ -1,29 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Home - Social Feed</title>
-  <link rel="stylesheet" href="styles/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Social Feed</title>
+  <link rel="shortcut icon" href="assets/favicon.png" type="image/x-icon">
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <h2>Welcome to Social Feed</h2>
+  <!-- 🎨 Theme Toggle -->
+  <div class="theme-toggle">
+    <i class="fas fa-moon"></i>
+  </div>
 
-  <div id="user-info"></div>
-  <button onclick="logout()">Logout</button>
+  <!-- 🚀 Main Layout -->
+  <div class="app-container">
+    <!-- 🎩 Top Navigation -->
+    <header class="navbar">
+      <div class="navbar-brand">
+        <img src="assets/favicon.png" alt="Logo" height="30" width="30">
+        <h1>Social Feed</h1>
+      </div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search...">
+      </div>
+      <div class="navbar-actions">
+        <div id="user-info" class="user-info">
+          <span class="user-avatar">👤</span>
+        </div>
+        <button onclick="logout()" class="btn logout-btn">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </header>
 
-  <hr>
+    <!-- 📱 Stories Section -->
+    <section class="stories-container">
+      <div class="stories">
+        <div class="story create-story">
+          <div class="story-avatar">
+            <i class="fas fa-plus"></i>
+          </div>
+          <span>Your Story</span>
+        </div>
+        <!-- Story items will be added dynamically -->
+      </div>
+    </section>
 
-  <h3>Create Post</h3>
-  <textarea id="post-text" placeholder="What's on your mind?" rows="3" cols="40"></textarea><br>
-  <input type="file" id="post-image"><br>
-  <button onclick="submitPost()">Post</button>
+    <!-- ✨ Floating Action Button -->
+    <button class="fab" onclick="openPostModal()">
+      <i class="fas fa-plus"></i>
+    </button>
 
-  <hr>
+    <!-- 📦 Main Content -->
+    <main class="container">
+      <!-- 📝 Create Post (Modal) -->
+      <div id="post-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Create Post</h2>
+            <button class="close-modal" onclick="closePostModal()">&times;</button>
+          </div>
+          <div class="modal-body">
+            <textarea id="post-text" placeholder="What's on your mind?" rows="3"></textarea>
+            <div class="image-preview" id="image-preview"></div>
+            <div class="post-actions">
+              <label for="post-image" class="file-upload-btn">
+                <i class="fas fa-image"></i> Photo
+              </label>
+              <input type="file" id="post-image" accept="image/*" />
+              <button onclick="submitPost()" class="btn post-btn">Post</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  <h3>Feed</h3>
-  <div id="feed"></div>
+      <!-- 📰 Feed Section -->
+      <section class="feed">
+        <div id="feed-loading" class="loading-skeleton">
+          <div class="skeleton-post">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-image"></div>
+          </div>
+          <div class="skeleton-post">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-image"></div>
+          </div>
+        </div>
+        <div id="feed" class="feed-posts"></div>
+      </section>
+    </main>
+
+    <!-- 🎯 Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav">
+      <a href="#" class="nav-item active">
+        <i class="fas fa-home"></i>
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-search"></i>
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-bell"></i>
+      </a>
+      <a href="#" class="nav-item">
+        <i class="fas fa-user"></i>
+      </a>
+    </nav>
+  </div>
 
   <script type="module" src="./scripts/post.js"></script>
-
 </body>
 </html>

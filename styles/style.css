@@ -1,10 +1,794 @@
-.post {
-    border: 1px solid #ddd;
-    margin: 10px 0;
-    padding: 10px;
-    background: #f9f9f9;
+/* 🌈 Variables */
+:root {
+  --primary: #4361ee;
+  --secondary: #3f37c9;
+  --accent: #4895ef;
+  --danger: #f72585;
+  --success: #4cc9f0;
+  --text: #2b2d42;
+  --text-light: #8d99ae;
+  --bg: #f8f9fa;
+  --card-bg: #ffffff;
+  --border: #e9ecef;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --radius: 12px;
+  --transition: all 0.3s ease;
+}
+
+/* 🌑 Dark Mode */
+[data-theme="dark"] {
+  --primary: #4895ef;
+  --secondary: #4361ee;
+  --accent: #3f37c9;
+  --text: #f8f9fa;
+  --text-light: #adb5bd;
+  --bg: #121212;
+  --card-bg: #1e1e1e;
+  --border: #2d2d2d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 🔄 Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: var(--transition);
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* 🎨 Theme Toggle */
+.theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  box-shadow: var(--shadow);
+}
+
+.theme-toggle i {
+  font-size: 1.2rem;
+}
+
+/* 🚀 App Container */
+.app-container {
+  max-width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🎩 Navbar */
+.navbar {
+  background-color: var(--card-bg);
+  padding: 15px 5%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow);
+  border-bottom: 1px solid var(--border);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-brand i {
+  font-size: 1.5rem;
+  color: var(--primary);
+}
+
+.navbar-brand h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.search-bar {
+  flex: 0.6;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-bar input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background-color: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.search-bar i {
+  position: absolute;
+  left: 15px;
+  color: var(--text-light);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.user-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* 📱 Stories */
+.stories-container {
+  padding: 15px 0;
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.stories {
+  display: flex;
+  gap: 15px;
+  padding: 0 5%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.stories::-webkit-scrollbar {
+  display: none;
+}
+
+.story {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.story-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, var(--primary), var(--accent));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+}
+
+.story-avatar::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.story img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--card-bg);
+}
+
+.story span {
+  font-size: 0.7rem;
+  color: var(--text);
+  max-width: 70px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.create-story .story-avatar {
+  background: var(--border);
+}
+
+.create-story .story-avatar i {
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+/* ✨ Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s ease;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+}
+
+/* 📦 Container */
+.container {
+  flex: 1;
+  padding: 0 5% 80px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* 🎭 Modal */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  width: 90%;
+  max-width: 500px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  img {
-    max-width: 100%;
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+/* 📝 Post Creator */
+textarea {
+  width: 100%;
+  padding: 15px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: inherit;
+  resize: none;
+  margin-bottom: 15px;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.image-preview {
+  width: 100%;
+  margin-bottom: 15px;
+  display: none;
+}
+
+.image-preview img {
+  width: 100%;
+  border-radius: var(--radius);
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.file-upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: var(--radius);
+  background-color: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.file-upload-btn:hover {
+  background-color: var(--border);
+}
+
+input[type="file"] {
+  display: none;
+}
+
+/* 📰 Feed */
+.feed {
+  margin-top: 20px;
+}
+
+.feed-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 📄 Post Card */
+.post {
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  gap: 10px;
+}
+
+.post-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.post-user {
+  flex: 1;
+}
+
+.post-user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.post-time {
+  font-size: 0.75rem;
+  color: var(--text-light);
+}
+
+.post-more {
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.post-content {
+  padding: 0 15px 15px;
+}
+
+.post-text {
+  margin-bottom: 15px;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: var(--radius);
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 15px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.post-action {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.post-action:hover {
+  background-color: var(--bg);
+}
+
+.post-action.liked {
+  color: var(--danger);
+}
+
+.post-stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 15px;
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+
+.post-comments {
+  padding: 10px 15px;
+  border-top: 1px solid var(--border);
+  display: none;
+}
+
+/* 🦴 Loading Skeleton */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skeleton-post {
+  background-color: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 15px;
+  box-shadow: var(--shadow);
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--bg);
+  margin-bottom: 15px;
+}
+
+.skeleton-line {
+  height: 12px;
+  background-color: var(--bg);
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.skeleton-line:first-of-type {
+  width: 80%;
+}
+
+.skeleton-line:last-of-type {
+  width: 60%;
+}
+
+.skeleton-image {
+  height: 300px;
+  background-color: var(--bg);
+  border-radius: var(--radius);
+  margin-top: 15px;
+}
+
+/* 🎯 Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--card-bg);
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+
+.nav-item {
+  color: var(--text-light);
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nav-item.active {
+  color: var(--primary);
+}
+
+.nav-item i {
+  margin-bottom: 3px;
+}
+
+/* 🎨 Buttons */
+.btn {
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn i {
+  font-size: 0.9rem;
+}
+
+.post-btn {
+  background-color: var(--primary);
+  color: white;
+}
+
+.post-btn:hover {
+  background-color: var(--secondary);
+}
+
+.logout-btn {
+  background: none;
+  color: var(--text-light);
+  padding: 5px;
+}
+
+.logout-btn:hover {
+  color: var(--danger);
+}
+
+/* 📱 Responsive Design */
+@media (max-width: 768px) {
+  .navbar-brand h1 {
+    display: none;
   }
   
+  .search-bar {
+    flex: 1;
+    margin: 0 15px;
+  }
+  
+  .user-info span:not(.user-avatar) {
+    display: none;
+  }
+}
+
+@media (min-width: 769px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* 🎭 Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* Comments Styling */
+.post-comments {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+.comments-list {
+  margin-bottom: 12px;
+}
+
+.no-comments {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.comment {
+  display: flex;
+  margin-bottom: 10px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--comment-bg);
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  font-weight: bold;
+}
+
+[data-theme="dark"] .comment-avatar{
+  background-color: var(--comment-bg-dark);
+}
+
+.comment-content {
+  flex: 1;
+  background-color: var(--comment-bg, #f0f2f5);
+  padding: 8px 12px;
+  border-radius: 18px;
+}
+
+[data-theme="dark"] .comment-content {
+  background-color: var(--comment-bg-dark, #3a3b3c);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.comment-user {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.comment-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.comment-text {
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.comment-delete {
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  margin-left: 8px;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+}
+
+.comment-delete:hover {
+  color: var(--error-color, #e41e3f);
+}
+
+.comment:hover .comment-delete {
+  opacity: 1;
+}
+
+.comment-form {
+  display: flex;
+  align-items: center;
+}
+
+.comment-input {
+  flex: 1;
+  border: none;
+  background-color: var(--comment-bg, #f0f2f5);
+  border-radius: 18px;
+  padding: 8px 12px;
+  margin: 0 8px;
+  color: var(--text-color);
+}
+
+[data-theme="dark"] .comment-input {
+  background-color: var(--comment-bg-dark, #3a3b3c);
+}
+
+.comment-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-color-light);
+}
+
+.comment-submit {
+  background: transparent;
+  border: none;
+  color: var(--accent-color);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.comment-submit:hover {
+  color: var(--accent-color-dark);
+}
+
+.comment-submit:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Update these CSS variables in your :root and [data-theme="dark"] */
+:root {
+  --comment-bg: #f0f2f5;
+  --error-color: #e41e3f;
+}
+
+[data-theme="dark"] {
+  --comment-bg-dark: #3a3b3c;
+}
