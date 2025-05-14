@@ -11,7 +11,7 @@ import {
   serverTimestamp,
   collection,
   addDoc,
-  getFirestore
+  getFirestore,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth,
@@ -29,54 +29,122 @@ const UPLOAD_PRESET = "social-feed";
 
 // 🎨 Theme Toggle
 function initTheme() {
-  const themeToggle = document.querySelector('.theme-toggle');
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  
-  themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    
+  const themeToggle = document.querySelector(".theme-toggle");
+  const savedTheme = localStorage.getItem("theme") || "light";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+
+  themeToggle.addEventListener("click", () => {
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", newTheme);
+    localStorage.setItem("theme", newTheme);
+
     // Update icon
-    const icon = themeToggle.querySelector('i');
-    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    const icon = themeToggle.querySelector("i");
+    icon.className = newTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
   });
-  
+
   // Set initial icon
-  const icon = themeToggle.querySelector('i');
-  icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  const icon = themeToggle.querySelector("i");
+  icon.className = savedTheme === "dark" ? "fas fa-sun" : "fas fa-moon";
 }
 
 // 🎭 Modal Functions
 function openPostModal() {
-  document.getElementById('post-modal').style.display = 'flex';
+  document.getElementById("post-modal").style.display = "flex";
 }
 
 function closePostModal() {
-  document.getElementById('post-modal').style.display = 'none';
+  document.getElementById("post-modal").style.display = "none";
 }
+
+// Story Modal Functions
+function openStoryModal() {
+  document.getElementById("story-modal").style.display = "flex";
+}
+
+// function closeStoryModal() {
+//   document.getElementById("story-modal").style.display = "none";
+//   document.getElementById("story-preview").style.display = "none";
+//   document.getElementById("story-preview").innerHTML = "";
+//   document.getElementById("story-image").value = "";
+// }
+
+// Story Viewer Functions
+function viewStory(story) {
+  const viewer = document.getElementById("story-viewer");
+  const storyImage = document.getElementById("viewed-story-image");
+  const storyUserName = document.querySelector(".story-user-name");
+  const storyUserAvatar = document.querySelector(".story-user-avatar");
+  const storyTime = document.querySelector(".story-time");
+
+  storyImage.src = story.imageUrl;
+  storyUserName.textContent = story.user.name;
+  storyUserAvatar.textContent = story.user.name.charAt(0).toUpperCase();
+
+  // Format time
+  const storyDate = story.createdAt?.toDate
+    ? story.createdAt.toDate()
+    : new Date();
+  storyTime.textContent = formatTime(storyDate);
+
+  viewer.style.display = "flex";
+
+  // Auto-close after 8 seconds (like Instagram)
+  setTimeout(() => {
+    if (viewer.style.display === "flex") {
+      closeStoryViewer();
+    }
+  }, 8000);
+}
+
+window.closeStoryViewer = function () {
+  document.getElementById("story-viewer").style.display = "none";
+};
+
+window.closeStoryModal = function () {
+  document.getElementById("story-modal").style.display = "none";
+};
 
 // 🖼️ Image Preview
 function setupImagePreview() {
-  const fileInput = document.getElementById('post-image');
-  const imagePreview = document.getElementById('image-preview');
-  
-  fileInput.addEventListener('change', function(e) {
+  const fileInput = document.getElementById("post-image");
+  const imagePreview = document.getElementById("image-preview");
+
+  fileInput.addEventListener("change", function (e) {
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
       const reader = new FileReader();
-      
-      reader.onload = function(event) {
+
+      reader.onload = function (event) {
         imagePreview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
-        imagePreview.style.display = 'block';
-      }
-      
+        imagePreview.style.display = "block";
+      };
+
       reader.readAsDataURL(file);
     } else {
-      imagePreview.style.display = 'none';
-      imagePreview.innerHTML = '';
+      imagePreview.style.display = "none";
+      imagePreview.innerHTML = "";
+    }
+  });
+
+  // Story image preview
+  const storyFileInput = document.getElementById("story-image");
+  const storyImagePreview = document.getElementById("story-preview");
+
+  storyFileInput.addEventListener("change", function (e) {
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function (event) {
+        storyImagePreview.innerHTML = `
+          <img src="${event.target.result}" alt="Story Preview" style="width:100%;object-fit:cover;">
+        `;
+        storyImagePreview.style.display = "block";
+      };
+
+      reader.readAsDataURL(file);
     }
   });
 }
@@ -86,21 +154,21 @@ onAuthStateChanged(auth, (user) => {
   if (user) {
     currentUser = user;
     document.getElementById("user-info").innerHTML = `
-      <span>${user.email.split('@')[0]}</span>
+      <span>${user.email.split("@")[0]}</span>
       <span class="user-avatar">${user.email.charAt(0).toUpperCase()}</span>
     `;
-    
+
     // Initialize theme and image preview after auth
     initTheme();
     setupImagePreview();
-    
+
     // Load content
     listenToPosts();
     loadStories();
-    
+
     // Hide loading skeletons
     setTimeout(() => {
-      document.getElementById('feed-loading').style.display = 'none';
+      document.getElementById("feed-loading").style.display = "none";
     }, 1000);
   } else {
     window.location.href = "login.html";
@@ -119,6 +187,11 @@ window.submitPost = async () => {
   const imageFile = document.getElementById("post-image").files[0];
   let imageUrl = "";
 
+  if (text && text.length > 1500) {
+    alert("Post content is too long. Maximum 1500 characters allowed.");
+    return;
+  }
+
   if (!text && !imageFile) {
     alert("Please add text or an image to your post");
     return;
@@ -131,14 +204,17 @@ window.submitPost = async () => {
 
     try {
       // Show loading state
-      const postBtn = document.querySelector('.post-btn');
+      const postBtn = document.querySelector(".post-btn");
       postBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
       postBtn.disabled = true;
 
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
       const data = await res.json();
       if (data.secure_url) {
         imageUrl = data.secure_url;
@@ -151,8 +227,8 @@ window.submitPost = async () => {
       return;
     } finally {
       // Reset button state
-      const postBtn = document.querySelector('.post-btn');
-      postBtn.innerHTML = 'Post';
+      const postBtn = document.querySelector(".post-btn");
+      postBtn.innerHTML = "Post";
       postBtn.disabled = false;
     }
   }
@@ -164,7 +240,7 @@ window.submitPost = async () => {
     user: {
       uid: currentUser.uid,
       email: currentUser.email,
-      name: currentUser.email.split('@')[0]
+      name: currentUser.email.split("@")[0],
     },
   });
 
@@ -173,7 +249,7 @@ window.submitPost = async () => {
   document.getElementById("post-image").value = "";
   document.getElementById("image-preview").style.display = "none";
   document.getElementById("image-preview").innerHTML = "";
-  
+
   // Close modal
   closePostModal();
 };
@@ -181,30 +257,35 @@ window.submitPost = async () => {
 // 📡 Listen for comments on a post
 function listenToComments(postId, commentsContainer) {
   const q = query(
-    collection(db, "comments"), 
+    collection(db, "comments"),
     where("postId", "==", postId),
     orderBy("createdAt", "asc")
   );
-  
+
   // Return the unsubscribe function so we can detach the listener when needed
   return onSnapshot(q, (snapshot) => {
     if (snapshot.empty) {
-      commentsContainer.innerHTML = '<div class="no-comments">No comments yet</div>';
+      commentsContainer.innerHTML =
+        '<div class="no-comments">No comments yet</div>';
       return;
     }
-    
-    commentsContainer.innerHTML = '';
-    
-    snapshot.forEach(doc => {
+
+    commentsContainer.innerHTML = "";
+
+    snapshot.forEach((doc) => {
       const comment = doc.data();
       const commentId = doc.id;
-      const commentTime = comment.createdAt?.toDate ? comment.createdAt.toDate() : new Date();
+      const commentTime = comment.createdAt?.toDate
+        ? comment.createdAt.toDate()
+        : new Date();
       const timeString = formatTime(commentTime);
-      
-      const commentElement = document.createElement('div');
-      commentElement.className = 'comment';
+
+      const commentElement = document.createElement("div");
+      commentElement.className = "comment";
       commentElement.innerHTML = `
-        <div class="comment-avatar">${comment.user.name.charAt(0).toUpperCase()}</div>
+        <div class="comment-avatar">${comment.user.name
+          .charAt(0)
+          .toUpperCase()}</div>
         <div class="comment-content">
           <div class="comment-header">
             <span class="comment-user">${comment.user.name}</span>
@@ -212,19 +293,24 @@ function listenToComments(postId, commentsContainer) {
           </div>
           <div class="comment-text">${comment.text}</div>
         </div>
-        ${comment.user.uid === currentUser.uid ? 
-          `<div class="comment-delete" onclick="deleteComment('${commentId}')">
+        ${
+          comment.user.uid === currentUser.uid
+            ? `<div class="comment-delete" onclick="deleteComment('${commentId}')">
             <i class="fas fa-trash"></i>
-          </div>` : ''}
+          </div>`
+            : ""
+        }
       `;
-      
+
       commentsContainer.appendChild(commentElement);
     });
-    
+
     // Update comment count in post
-    const postElement = commentsContainer.closest('.post');
-    const commentsCountEl = postElement.querySelector('.comments-count');
-    commentsCountEl.textContent = `${snapshot.size} ${snapshot.size === 1 ? 'comment' : 'comments'}`;
+    const postElement = commentsContainer.closest(".post");
+    const commentsCountEl = postElement.querySelector(".comments-count");
+    commentsCountEl.textContent = `${snapshot.size} ${
+      snapshot.size === 1 ? "comment" : "comments"
+    }`;
   });
 }
 
@@ -243,27 +329,45 @@ function listenToPosts() {
 }
 
 // 🏰 Load Stories
+// Update the loadStories function to use real data
 function loadStories() {
-  const storiesContainer = document.querySelector('.stories');
-  
-  // Add some dummy stories (in a real app, these would come from your database)
-  const stories = [
-    { id: 1, name: "Alex", avatar: "👨" },
-    { id: 2, name: "Jamie", avatar: "👩" },
-    { id: 3, name: "Taylor", avatar: "🧑" },
-    { id: 4, name: "Morgan", avatar: "👨" },
-    { id: 5, name: "Casey", avatar: "👩" },
-    { id: 6, name: "Riley", avatar: "🧑" },
-  ];
-  
-  stories.forEach(story => {
-    const storyElement = document.createElement('div');
-    storyElement.className = 'story';
-    storyElement.innerHTML = `
-      <div class="story-avatar">${story.avatar}</div>
-      <span>${story.name}</span>
-    `;
-    storiesContainer.appendChild(storyElement);
+  const storiesContainer = document.querySelector(".stories");
+  const now = new Date();
+
+  // Clear existing stories except the "create story" button
+  while (storiesContainer.children.length > 1) {
+    storiesContainer.removeChild(storiesContainer.lastChild);
+  }
+
+  // Query stories that haven't expired yet
+  const q = query(
+    collection(db, "stories"),
+    where("expiresAt", ">", now),
+    orderBy("expiresAt", "asc")
+  );
+
+  onSnapshot(q, (snapshot) => {
+    // Clear existing stories except the "create story" button
+    while (storiesContainer.children.length > 1) {
+      storiesContainer.removeChild(storiesContainer.lastChild);
+    }
+
+    snapshot.forEach((doc) => {
+      const story = doc.data();
+      const storyElement = document.createElement("div");
+      storyElement.className = "story";
+      storyElement.innerHTML = `
+    <div class="story-avatar">${story.user.name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()}</div>
+    <span>${story.user.name}</span>
+  `;
+
+      storyElement.addEventListener("click", () => viewStory(story));
+      storiesContainer.appendChild(storyElement);
+    });
   });
 }
 
@@ -272,18 +376,31 @@ async function renderPost(docSnap) {
   const post = docSnap.data();
   const postId = docSnap.id;
 
-  const div = document.createElement('div');
-  div.classList.add('post', 'fade-in');
+  const div = document.createElement("div");
+  div.classList.add("post", "fade-in");
 
   // Format timestamp
-  const postTime = post.createdAt?.toDate ? post.createdAt.toDate() : new Date();
+  const postTime = post.createdAt?.toDate
+    ? post.createdAt.toDate()
+    : new Date();
   const timeString = formatTime(postTime);
+
+  // Create initial display text
+  const displayText = post.text 
+    ? (post.text.length > 500 
+        ? post.text.substring(0, 500) + '...' 
+        : post.text)
+    : '';
 
   div.innerHTML = `
     <div class="post-header">
-      <div class="post-avatar">${post.user.name?.charAt(0) || post.user.email.charAt(0)}</div>
+      <div class="post-avatar">${
+        post.user.name?.charAt(0) || post.user.email.charAt(0)
+      }</div>
       <div class="post-user">
-        <div class="post-user-name">${post.user.name || post.user.email.split('@')[0]}</div>
+        <div class="post-user-name">${
+          post.user.name || post.user.email.split("@")[0]
+        }</div>
         <div class="post-time">${timeString}</div>
       </div>
       <div class="post-more">
@@ -291,8 +408,19 @@ async function renderPost(docSnap) {
       </div>
     </div>
     <div class="post-content">
-      ${post.text ? `<div class="post-text">${post.text}</div>` : ''}
-      ${post.imageUrl ? `<img src="${post.imageUrl}" class="post-image" loading="lazy">` : ''}
+      ${post.text ? `
+        <div class="post-text">
+          <span class="post-text-content">${displayText}</span>
+          ${post.text.length > 500 ? 
+            `<button class="text-toggle-btn">Show more</button>` 
+            : ''}
+        </div>
+      ` : ''}
+      ${
+        post.imageUrl
+          ? `<img src="${post.imageUrl}" class="post-image" loading="lazy">`
+          : ""
+      }
     </div>
     <div class="post-stats">
       <span class="likes-count">0 likes</span>
@@ -315,7 +443,9 @@ async function renderPost(docSnap) {
     <div class="post-comments" style="display: none;">
       <div class="comments-list"></div>
       <div class="comment-form">
-        <div class="comment-avatar">${currentUser.email.charAt(0).toUpperCase()}</div>
+        <div class="comment-avatar">${currentUser.email
+          .charAt(0)
+          .toUpperCase()}</div>
         <input type="text" class="comment-input" placeholder="Write a comment...">
         <button class="comment-submit">
           <i class="fas fa-paper-plane"></i>
@@ -324,67 +454,102 @@ async function renderPost(docSnap) {
     </div>
   `;
 
+  // Add toggle functionality for long text
+  if (post.text && post.text.length > 500) {
+    const textToggleBtn = div.querySelector('.text-toggle-btn');
+    const postTextContent = div.querySelector('.post-text-content');
+    const fullText = post.text;
+    
+    textToggleBtn.addEventListener('click', function() {
+      if (this.textContent === 'Show more') {
+        // Expand to show full text
+        postTextContent.textContent = fullText;
+        this.textContent = 'Show less';
+      } else {
+        // Collapse to show truncated text
+        postTextContent.textContent = fullText.substring(0, 500) + '...';
+        this.textContent = 'Show more';
+      }
+    });
+  }
+
   // 🔁 Real-time like listener
-  const likeQuery = query(collection(db, "likes"), where("postId", "==", postId));
+  const likeQuery = query(
+    collection(db, "likes"),
+    where("postId", "==", postId)
+  );
   onSnapshot(likeQuery, (likeSnap) => {
     const likeCount = likeSnap.size;
-    const liked = likeSnap.docs.some((doc) => doc.data().userId === currentUser.uid);
-    
-    const likesCountEl = div.querySelector('.likes-count');
-    const likeBtn = div.querySelector('.like-btn');
-    
-    likesCountEl.textContent = `${likeCount} ${likeCount === 1 ? 'like' : 'likes'}`;
-    
+    const liked = likeSnap.docs.some(
+      (doc) => doc.data().userId === currentUser.uid
+    );
+
+    const likesCountEl = div.querySelector(".likes-count");
+    const likeBtn = div.querySelector(".like-btn");
+
+    likesCountEl.textContent = `${likeCount} ${
+      likeCount === 1 ? "like" : "likes"
+    }`;
+
     if (liked) {
-      likeBtn.innerHTML = '<i class="fas fa-heart"></i><span>Liked</span>';
-      likeBtn.classList.add('liked');
+      likeBtn.innerHTML = '<i class="fas fa-heart"></i><span>Like</span>';
+      likeBtn.classList.add("liked");
     } else {
       likeBtn.innerHTML = '<i class="far fa-heart"></i><span>Like</span>';
-      likeBtn.classList.remove('liked');
+      likeBtn.classList.remove("liked");
     }
-    
+
     // Add click handler
-    likeBtn.onclick = () => liked ? unlikePost(postId) : likePost(postId);
+    likeBtn.onclick = () => (liked ? unlikePost(postId) : likePost(postId));
   });
 
   // 🔁 Real-time comment count listener - Add this section
-  const commentCountQuery = query(collection(db, "comments"), where("postId", "==", postId));
+  const commentCountQuery = query(
+    collection(db, "comments"),
+    where("postId", "==", postId)
+  );
   onSnapshot(commentCountQuery, (commentSnap) => {
     const commentCount = commentSnap.size;
-    const commentsCountEl = div.querySelector('.comments-count');
-    commentsCountEl.textContent = `${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`;
+    const commentsCountEl = div.querySelector(".comments-count");
+    commentsCountEl.textContent = `${commentCount} ${
+      commentCount === 1 ? "comment" : "comments"
+    }`;
   });
 
   // Comment submission handler
-  const commentInput = div.querySelector('.comment-input');
-  const commentSubmitBtn = div.querySelector('.comment-submit');
-  
-  commentSubmitBtn.addEventListener('click', () => {
+  const commentInput = div.querySelector(".comment-input");
+  const commentSubmitBtn = div.querySelector(".comment-submit");
+
+  commentSubmitBtn.addEventListener("click", () => {
     submitComment(postId, commentInput);
   });
-  
+
   // Allow submitting comments with Enter key
-  commentInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
+  commentInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
       submitComment(postId, commentInput);
     }
   });
 
   // Comment button handler
-  div.querySelector('.comment-btn').addEventListener('click', function() {
-    const commentsSection = div.querySelector('.post-comments');
-    const displayState = commentsSection.style.display === 'none' ? 'block' : 'none';
+  div.querySelector(".comment-btn").addEventListener("click", function () {
+    const commentsSection = div.querySelector(".post-comments");
+    const displayState =
+      commentsSection.style.display === "none" ? "block" : "none";
     commentsSection.style.display = displayState;
-    
+
     // Attach comment listeners when opening the comments section
-    if (displayState === 'block') {
-      const commentsListContainer = div.querySelector('.comments-list');
+    if (displayState === "block") {
+      const commentsListContainer = div.querySelector(".comments-list");
       // Only create the listener if not already listening
       if (!div.dataset.listeningToComments) {
-        div.dataset.commentListener = listenToComments(postId, commentsListContainer);
-        div.dataset.listeningToComments = 'true';
+        div.dataset.commentListener = listenToComments(
+          postId,
+          commentsListContainer
+        );
+        div.dataset.listeningToComments = "true";
       }
-      
+
       // Focus on comment input
       commentInput.focus();
     }
@@ -397,13 +562,14 @@ async function renderPost(docSnap) {
 function formatTime(date) {
   const now = new Date();
   const diffInSeconds = Math.floor((now - date) / 1000);
-  
-  if (diffInSeconds < 60) return 'Just now';
+
+  if (diffInSeconds < 60) return "Just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (diffInSeconds < 604800)
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 // ❤️ Like post
@@ -425,12 +591,12 @@ async function unlikePost(postId) {
 // 💬 Submit comment
 window.submitComment = async (postId, commentInputElement) => {
   const commentText = commentInputElement.value.trim();
-  
+
   if (!commentText) {
     alert("Please enter a comment");
     return;
   }
-  
+
   try {
     await addDoc(collection(db, "comments"), {
       postId,
@@ -439,15 +605,75 @@ window.submitComment = async (postId, commentInputElement) => {
       user: {
         uid: currentUser.uid,
         email: currentUser.email,
-        name: currentUser.email.split('@')[0]
-      }
+        name: currentUser.email.split("@")[0],
+      },
     });
-    
+
     // Clear the comment input
     commentInputElement.value = "";
   } catch (error) {
     console.error("Error adding comment:", error);
     alert("Failed to post comment. Please try again.");
+  }
+};
+
+// Add story submission function
+window.submitStory = async () => {
+  const imageFile = document.getElementById("story-image").files[0];
+
+  if (!imageFile) {
+    alert("Please select an image for your story");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", imageFile);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  try {
+    // Show loading state
+    const storyBtn = document.querySelector(".story-btn");
+    storyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    storyBtn.disabled = true;
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+    const data = await res.json();
+
+    if (data.secure_url) {
+      // Add story with 24-hour expiration
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 1);
+
+      await addDoc(collection(db, "stories"), {
+        imageUrl: data.secure_url,
+        createdAt: serverTimestamp(),
+        expiresAt: expiresAt,
+        user: {
+          uid: currentUser.uid,
+          name: currentUser.email.split("@")[0],
+          email: currentUser.email,
+        },
+      });
+
+      closeStoryModal();
+      loadStories();
+    } else {
+      throw new Error("Upload failed");
+    }
+  } catch (error) {
+    console.error("Story upload failed:", error);
+    alert("Story upload failed. Please try again.");
+  } finally {
+    // Reset button state
+    const storyBtn = document.querySelector(".story-btn");
+    storyBtn.innerHTML = "Post Story";
+    storyBtn.disabled = false;
   }
 };
 
@@ -470,3 +696,4 @@ window.openPostModal = openPostModal;
 window.closePostModal = closePostModal;
 window.submitComment = submitComment;
 window.deleteComment = deleteComment;
+document.querySelector('.create-story').addEventListener('click', openStoryModal);
