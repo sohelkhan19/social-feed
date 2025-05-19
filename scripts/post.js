@@ -387,8 +387,8 @@ async function renderPost(docSnap) {
 
   // Create initial display text
   const displayText = post.text 
-    ? (post.text.length > 500 
-        ? post.text.substring(0, 500) + '...' 
+    ? (post.text.length > 200 
+        ? post.text.substring(0, 200) + '...' 
         : post.text)
     : '';
 
@@ -411,7 +411,7 @@ async function renderPost(docSnap) {
       ${post.text ? `
         <div class="post-text">
           <span class="post-text-content">${displayText}</span>
-          ${post.text.length > 500 ? 
+          ${post.text.length > 200 ? 
             `<button class="text-toggle-btn">Show more</button>` 
             : ''}
         </div>
@@ -455,7 +455,7 @@ async function renderPost(docSnap) {
   `;
 
   // Add toggle functionality for long text
-  if (post.text && post.text.length > 500) {
+  if (post.text && post.text.length > 200) {
     const textToggleBtn = div.querySelector('.text-toggle-btn');
     const postTextContent = div.querySelector('.post-text-content');
     const fullText = post.text;
@@ -467,7 +467,7 @@ async function renderPost(docSnap) {
         this.textContent = 'Show less';
       } else {
         // Collapse to show truncated text
-        postTextContent.textContent = fullText.substring(0, 500) + '...';
+        postTextContent.textContent = fullText.substring(0, 200) + '...';
         this.textContent = 'Show more';
       }
     });
