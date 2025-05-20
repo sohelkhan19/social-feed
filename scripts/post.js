@@ -262,12 +262,20 @@ window.submitPost = async () => {
   let imageUrl = "";
 
   if (text && text.length > 1500) {
-    alert("Post content is too long. Maximum 1500 characters allowed.");
+    Swal.fire({
+      icon: "warning",
+      title: "Content Too Long",
+      text: "Post content is too long. Maximum 1500 characters allowed.",
+    });
     return;
   }
 
   if (!text && !imageFile) {
-    alert("Please add text or an image to your post");
+    Swal.fire({
+      icon: "error",
+      title: "Empty Post",
+      text: "Please add text or an image to your post",
+    });
     return;
   }
 
@@ -295,9 +303,20 @@ window.submitPost = async () => {
       } else {
         throw new Error("Upload failed");
       }
+      Swal.fire({
+        icon: "success",
+        title: "Posted!",
+        text: "Your post has been shared successfully",
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Cloudinary upload failed:", error);
-      alert("Image upload failed. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: "Image upload failed. Please try again.",
+      });
       return;
     } finally {
       // Reset button state
@@ -335,12 +354,20 @@ window.submitEditPost = async function () {
   let newImageUrl = currentEditingImageUrl;
 
   if (newText && newText.length > 1500) {
-    alert("Post content is too long. Maximum 1500 characters allowed.");
+    Swal.fire({
+      icon: "warning",
+      title: "Content Too Long",
+      text: "Post content is too long. Maximum 1500 characters allowed.",
+    });
     return;
   }
 
   if (!newText && !newImageUrl && !imageFile) {
-    alert("Post cannot be empty. Please add text or an image.");
+    Swal.fire({
+      icon: "error",
+      title: "Empty Post",
+      text: "Post cannot be empty. Please add text or an image.",
+    });
     return;
   }
 
@@ -371,7 +398,11 @@ window.submitEditPost = async function () {
       }
     } catch (error) {
       console.error("Image upload failed:", error);
-      alert("Image upload failed. Please try again.");
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: "Image upload failed. Please try again.",
+      });
       return;
     }
   }
@@ -389,9 +420,20 @@ window.submitEditPost = async function () {
     );
 
     closeEditPostModal();
+    Swal.fire({
+      icon: "success",
+      title: "Updated!",
+      text: "Your post has been updated successfully",
+      timer: 2000,
+      showConfirmButton: false,
+    });
   } catch (error) {
     console.error("Error updating post:", error);
-    alert("Failed to update post. Please try again.");
+    Swal.fire({
+      icon: "error",
+      title: "Update Failed",
+      text: "Failed to update post. Please try again.",
+    });
   } finally {
     // Reset button state
     const saveBtn = document.querySelector("#edit-post-modal .post-btn");
@@ -402,39 +444,56 @@ window.submitEditPost = async function () {
 
 // 🗑️ Delete Post
 window.deletePost = async function (postId) {
-  if (
-    confirm(
-      "Are you sure you want to delete this post? This action cannot be undone."
-    )
-  ) {
-    try {
-      // First delete all associated likes
-      const likesQuery = query(
-        collection(db, "likes"),
-        where("postId", "==", postId)
-      );
-      const likesSnapshot = await getDocs(likesQuery);
-      likesSnapshot.forEach(async (likeDoc) => {
-        await deleteDoc(likeDoc.ref);
-      });
+  Swal.fire({
+    title: "Delete Post?",
+    text: "Are you sure you want to delete this post? This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        // Delete logic here
+        const likesQuery = query(
+          collection(db, "likes"),
+          where("postId", "==", postId)
+        );
+        const likesSnapshot = await getDocs(likesQuery);
+        likesSnapshot.forEach(async (likeDoc) => {
+          await deleteDoc(likeDoc.ref);
+        });
 
-      // Then delete all associated comments
-      const commentsQuery = query(
-        collection(db, "comments"),
-        where("postId", "==", postId)
-      );
-      const commentsSnapshot = await getDocs(commentsQuery);
-      commentsSnapshot.forEach(async (commentDoc) => {
-        await deleteDoc(commentDoc.ref);
-      });
+        // Then delete all associated comments
+        const commentsQuery = query(
+          collection(db, "comments"),
+          where("postId", "==", postId)
+        );
+        const commentsSnapshot = await getDocs(commentsQuery);
+        commentsSnapshot.forEach(async (commentDoc) => {
+          await deleteDoc(commentDoc.ref);
+        });
 
-      // Finally delete the post itself
-      await deleteDoc(doc(db, "posts", postId));
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      alert("Failed to delete post. Please try again.");
+        // Finally delete the post itself
+        await deleteDoc(doc(db, "posts", postId));
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Your post has been deleted successfully",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Delete Failed",
+          text: "Failed to delete post. Please try again.",
+        });
+      }
     }
-  }
+  });
 };
 
 // 📡 Listen for comments on a post
@@ -819,7 +878,11 @@ window.submitComment = async (postId, commentInputElement) => {
   const commentText = commentInputElement.value.trim();
 
   if (!commentText) {
-    alert("Please enter a comment");
+    Swal.fire({
+      icon: "error",
+      title: "Empty Comment",
+      text: "Please enter a comment",
+    });
     return;
   }
 
@@ -839,7 +902,11 @@ window.submitComment = async (postId, commentInputElement) => {
     commentInputElement.value = "";
   } catch (error) {
     console.error("Error adding comment:", error);
-    alert("Failed to post comment. Please try again.");
+    Swal.fire({
+      icon: "error",
+      title: "Comment Failed",
+      text: "Failed to post comment. Please try again.",
+    });
   }
 };
 
@@ -848,7 +915,11 @@ window.submitStory = async () => {
   const imageFile = document.getElementById("story-image").files[0];
 
   if (!imageFile) {
-    alert("Please select an image for your story");
+    Swal.fire({
+      icon: "error",
+      title: "No Image Selected",
+      text: "Please select an image for your story",
+    });
     return;
   }
 
@@ -889,12 +960,23 @@ window.submitStory = async () => {
 
       closeStoryModal();
       loadStories();
+      Swal.fire({
+        icon: "success",
+        title: "Story Posted!",
+        text: "Your story will be visible for 24 hours",
+        timer: 2500,
+        showConfirmButton: false,
+      });
     } else {
       throw new Error("Upload failed");
     }
   } catch (error) {
     console.error("Story upload failed:", error);
-    alert("Story upload failed. Please try again.");
+    Swal.fire({
+      icon: "error",
+      title: "Upload Failed",
+      text: "Story upload failed. Please try again.",
+    });
   } finally {
     // Reset button state
     const storyBtn = document.querySelector(".story-btn");
@@ -905,14 +987,34 @@ window.submitStory = async () => {
 
 // 🗑️ Delete comment
 window.deleteComment = async (commentId) => {
-  if (confirm("Are you sure you want to delete this comment?")) {
-    try {
-      await deleteDoc(doc(db, "comments", commentId));
-    } catch (error) {
-      console.error("Error deleting comment:", error);
-      alert("Failed to delete comment. Please try again.");
+  Swal.fire({
+    title: "Delete Comment?",
+    text: "Are you sure you want to delete this comment?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Yes, delete it!",
+  }).then(async (result) => {
+    if (result.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, "comments", commentId));
+        Swal.fire({
+          icon: "success",
+          title: "Comment Deleted!",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      } catch (error) {
+        console.error("Error deleting comment:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Delete Failed",
+          text: "Failed to delete comment. Please try again.",
+        });
+      }
     }
-  }
+  });
 };
 
 // Expose functions for HTML onclick

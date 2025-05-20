@@ -525,7 +525,6 @@ input[type="file"] {
   color: var(--primary);
   cursor: pointer;
   padding: 0;
-  margin-left: 5px;
   font-weight: 500;
 }
 
