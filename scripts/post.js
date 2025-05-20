@@ -61,37 +61,37 @@ function closePostModal() {
 }
 
 // Edit Post Modal Functions
-window.openEditPostModal = function(postId, currentText, currentImageUrl) {
+window.openEditPostModal = function (postId, currentText, currentImageUrl) {
   currentEditingPostId = postId;
   currentEditingImageUrl = currentImageUrl;
-  
-  document.getElementById('edit-post-text').value = currentText;
-  
-  const editImagePreview = document.getElementById('edit-image-preview');
+
+  document.getElementById("edit-post-text").value = currentText;
+
+  const editImagePreview = document.getElementById("edit-image-preview");
   if (currentImageUrl) {
     editImagePreview.innerHTML = `<img src="${currentImageUrl}" alt="Current Image">`;
-    editImagePreview.style.display = 'block';
-    document.getElementById('image-actions').style.display = 'flex';
+    editImagePreview.style.display = "block";
+    document.getElementById("image-actions").style.display = "flex";
   } else {
-    editImagePreview.style.display = 'none';
-    document.getElementById('image-actions').style.display = 'none';
+    editImagePreview.style.display = "none";
+    document.getElementById("image-actions").style.display = "none";
   }
-  
-  document.getElementById('edit-post-modal').style.display = 'flex';
+
+  document.getElementById("edit-post-modal").style.display = "flex";
 };
 
-window.closeEditPostModal = function() {
-  document.getElementById('edit-post-modal').style.display = 'none';
+window.closeEditPostModal = function () {
+  document.getElementById("edit-post-modal").style.display = "none";
   currentEditingPostId = null;
   currentEditingImageUrl = null;
-  document.getElementById('edit-post-image').value = '';
+  document.getElementById("edit-post-image").value = "";
 };
 
-window.removeImage = function() {
+window.removeImage = function () {
   currentEditingImageUrl = null;
-  document.getElementById('edit-image-preview').style.display = 'none';
-  document.getElementById('edit-image-preview').innerHTML = '';
-  document.getElementById('image-actions').style.display = 'none';
+  document.getElementById("edit-image-preview").style.display = "none";
+  document.getElementById("edit-image-preview").innerHTML = "";
+  document.getElementById("image-actions").style.display = "none";
 };
 
 // Story Modal Functions
@@ -121,7 +121,7 @@ function viewStory(story) {
   }
 
   // Reset progress bar
-  const progressBar = viewer.querySelector('.story-progress-bar');
+  const progressBar = viewer.querySelector(".story-progress-bar");
   progressBar.innerHTML = '<div class="progress"></div>';
 
   storyImage.src = story.imageUrl;
@@ -137,8 +137,8 @@ function viewStory(story) {
   viewer.style.display = "flex";
 
   // Start progress bar animation
-  const progress = progressBar.querySelector('.progress');
-  progress.style.animation = 'progress 5s linear forwards';
+  const progress = progressBar.querySelector(".progress");
+  progress.style.animation = "progress 5s linear forwards";
 
   // Set a consistent 5-second timeout for auto-closing
   window.storyViewerTimeout = setTimeout(() => {
@@ -180,18 +180,18 @@ function setupImagePreview() {
   });
 
   // Edit post image preview
-  const editFileInput = document.getElementById('edit-post-image');
-  const editImagePreview = document.getElementById('edit-image-preview');
+  const editFileInput = document.getElementById("edit-post-image");
+  const editImagePreview = document.getElementById("edit-image-preview");
 
-  editFileInput.addEventListener('change', function(e) {
+  editFileInput.addEventListener("change", function (e) {
     if (e.target.files.length > 0) {
       const file = e.target.files[0];
       const reader = new FileReader();
 
-      reader.onload = function(event) {
+      reader.onload = function (event) {
         editImagePreview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
-        editImagePreview.style.display = 'block';
-        document.getElementById('image-actions').style.display = 'flex';
+        editImagePreview.style.display = "block";
+        document.getElementById("image-actions").style.display = "flex";
       };
 
       reader.readAsDataURL(file);
@@ -209,12 +209,16 @@ function setupImagePreview() {
 
       reader.onload = function (event) {
         storyImagePreview.innerHTML = `
-          <img src="${event.target.result}" alt="Story Preview" style="width:100%;object-fit:cover;">
+          <img src="${event.target.result}" alt="Story Preview">
         `;
         storyImagePreview.style.display = "block";
+        storyImagePreview.scrollIntoView({ behavior: "smooth" });
       };
 
       reader.readAsDataURL(file);
+    } else {
+      storyImagePreview.style.display = "none";
+      storyImagePreview.innerHTML = "";
     }
   });
 }
@@ -325,9 +329,9 @@ window.submitPost = async () => {
 };
 
 // 🖊️ Submit edited post
-window.submitEditPost = async function() {
-  const newText = document.getElementById('edit-post-text').value;
-  const imageFile = document.getElementById('edit-post-image').files[0];
+window.submitEditPost = async function () {
+  const newText = document.getElementById("edit-post-text").value;
+  const imageFile = document.getElementById("edit-post-image").files[0];
   let newImageUrl = currentEditingImageUrl;
 
   if (newText && newText.length > 1500) {
@@ -374,11 +378,15 @@ window.submitEditPost = async function() {
 
   try {
     const postRef = doc(db, "posts", currentEditingPostId);
-    await setDoc(postRef, {
-      text: newText,
-      imageUrl: newImageUrl,
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    await setDoc(
+      postRef,
+      {
+        text: newText,
+        imageUrl: newImageUrl,
+        updatedAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
 
     closeEditPostModal();
   } catch (error) {
@@ -393,8 +401,12 @@ window.submitEditPost = async function() {
 };
 
 // 🗑️ Delete Post
-window.deletePost = async function(postId) {
-  if (confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+window.deletePost = async function (postId) {
+  if (
+    confirm(
+      "Are you sure you want to delete this post? This action cannot be undone."
+    )
+  ) {
     try {
       // First delete all associated likes
       const likesQuery = query(
@@ -528,9 +540,9 @@ function loadStories() {
       storyElement.className = "story";
       storyElement.innerHTML = `
     <div class="story-avatar">${story.user.name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
       .toUpperCase()}</div>
     <span>${story.user.name}</span>
   `;
@@ -556,11 +568,11 @@ async function renderPost(docSnap) {
   const timeString = formatTime(postTime);
 
   // Create initial display text
-  const displayText = post.text 
-    ? (post.text.length > 200 
-        ? post.text.substring(0, 200) + '...' 
-        : post.text)
-    : '';
+  const displayText = post.text
+    ? post.text.length > 200
+      ? post.text.substring(0, 200) + "..."
+      : post.text
+    : "";
 
   div.innerHTML = `
     <div class="post-header">
@@ -579,7 +591,10 @@ async function renderPost(docSnap) {
           ${
             post.user.uid === currentUser.uid
               ? `
-              <div class="post-option" onclick="openEditPostModal('${postId}', '${post.text.replace(/'/g, "\\'")}', '${post.imageUrl || ''}')">
+              <div class="post-option" onclick="openEditPostModal('${postId}', '${post.text.replace(
+                  /'/g,
+                  "\\'"
+                )}', '${post.imageUrl || ""}')">
                 <i class="fas fa-edit"></i> Edit
               </div>
               <div class="post-option delete-option" onclick="deletePost('${postId}')">
@@ -596,14 +611,20 @@ async function renderPost(docSnap) {
       </div>
     </div>
     <div class="post-content">
-      ${post.text ? `
+      ${
+        post.text
+          ? `
         <div class="post-text">
           <span class="post-text-content">${displayText}</span>
-          ${post.text.length > 200 ? 
-            `<button class="text-toggle-btn">Show more</button>` 
-            : ''}
+          ${
+            post.text.length > 200
+              ? `<button class="text-toggle-btn">Show more</button>`
+              : ""
+          }
         </div>
-      ` : ''}
+      `
+          : ""
+      }
       ${
         post.imageUrl
           ? `<img src="${post.imageUrl}" class="post-image" loading="lazy">`
@@ -643,37 +664,37 @@ async function renderPost(docSnap) {
   `;
 
   // Add toggle functionality for post options dropdown
-  const postMoreBtn = div.querySelector('.post-more');
-  const postOptions = div.querySelector('.post-options');
-  
-  postMoreBtn.addEventListener('click', (e) => {
+  const postMoreBtn = div.querySelector(".post-more");
+  const postOptions = div.querySelector(".post-options");
+
+  postMoreBtn.addEventListener("click", (e) => {
     e.stopPropagation(); // Prevent event bubbling
-    const isVisible = postOptions.style.display === 'block';
-    postOptions.style.display = isVisible ? 'none' : 'block';
+    const isVisible = postOptions.style.display === "block";
+    postOptions.style.display = isVisible ? "none" : "block";
   });
 
   // Close dropdown when clicking elsewhere
-  document.addEventListener('click', (e) => {
+  document.addEventListener("click", (e) => {
     if (!postMoreBtn.contains(e.target)) {
-      postOptions.style.display = 'none';
+      postOptions.style.display = "none";
     }
   });
 
   // Add toggle functionality for long text
   if (post.text && post.text.length > 200) {
-    const textToggleBtn = div.querySelector('.text-toggle-btn');
-    const postTextContent = div.querySelector('.post-text-content');
+    const textToggleBtn = div.querySelector(".text-toggle-btn");
+    const postTextContent = div.querySelector(".post-text-content");
     const fullText = post.text;
-    
-    textToggleBtn.addEventListener('click', function() {
-      if (this.textContent === 'Show more') {
+
+    textToggleBtn.addEventListener("click", function () {
+      if (this.textContent === "Show more") {
         // Expand to show full text
         postTextContent.textContent = fullText;
-        this.textContent = 'Show less';
+        this.textContent = "Show less";
       } else {
         // Collapse to show truncated text
-        postTextContent.textContent = fullText.substring(0, 200) + '...';
-        this.textContent = 'Show more';
+        postTextContent.textContent = fullText.substring(0, 200) + "...";
+        this.textContent = "Show more";
       }
     });
   }
@@ -901,4 +922,6 @@ window.openPostModal = openPostModal;
 window.closePostModal = closePostModal;
 window.submitComment = submitComment;
 window.deleteComment = deleteComment;
-document.querySelector('.create-story').addEventListener('click', openStoryModal);
+document
+  .querySelector(".create-story")
+  .addEventListener("click", openStoryModal);

@@ -137,38 +137,42 @@
         </div>
 
         <!-- 📝 Edit Post Modal -->
-<div id="edit-post-modal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2>Edit Post</h2>
-      <button class="close-modal" onclick="closeEditPostModal()">
-        &times;
-      </button>
-    </div>
-    <div class="modal-body">
-      <textarea
-        id="edit-post-text"
-        placeholder="Edit your post..."
-        rows="3"
-      ></textarea>
-      <div class="image-preview" id="edit-image-preview"></div>
-      <div class="post-actions">
-        <label for="edit-post-image" class="file-upload-btn">
-          <i class="fas fa-image"></i> Change Photo
-        </label>
-        <input type="file" id="edit-post-image" accept="image/*" />
-        <div class="image-actions" id="image-actions" style="display: none;">
-          <button onclick="removeImage()" class="btn danger-btn">
-            <i class="fas fa-trash"></i> Remove
-          </button>
+        <div id="edit-post-modal" class="modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2>Edit Post</h2>
+              <button class="close-modal" onclick="closeEditPostModal()">
+                &times;
+              </button>
+            </div>
+            <div class="modal-body">
+              <textarea
+                id="edit-post-text"
+                placeholder="Edit your post..."
+                rows="3"
+              ></textarea>
+              <div class="image-preview" id="edit-image-preview"></div>
+              <div class="post-actions">
+                <label for="edit-post-image" class="file-upload-btn">
+                  <i class="fas fa-image"></i> Change Photo
+                </label>
+                <input type="file" id="edit-post-image" accept="image/*" />
+                <div
+                  class="image-actions"
+                  id="image-actions"
+                  style="display: none"
+                >
+                  <button onclick="removeImage()" class="btn danger-btn">
+                    <i class="fas fa-trash"></i> Remove
+                  </button>
+                </div>
+                <button onclick="submitEditPost()" class="btn post-btn">
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        <button onclick="submitEditPost()" class="btn post-btn">
-          Save Changes
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
         <!-- 🖼️ Story Viewer -->
         <div id="story-viewer" class="story-viewer">
@@ -184,7 +188,7 @@
               </button>
             </div>
             <div class="story-display">
-                    <div class="story-progress-bar"></div>
+              <div class="story-progress-bar"></div>
               <img id="viewed-story-image" src="" alt="Story" />
             </div>
           </div>

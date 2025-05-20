@@ -37,7 +37,7 @@
 }
 
 body {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.6;
@@ -697,17 +697,17 @@ input[type="file"] {
   .navbar-brand h1 {
     display: none;
   }
-  
+
   .search-bar {
     flex: 1;
     margin: 0 15px;
   }
-  
+
   .user-info span:not(.user-avatar) {
     display: none;
   }
 
-  .modal-content{
+  .modal-content {
     width: 90%;
   }
 
@@ -715,19 +715,19 @@ input[type="file"] {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   #edit-post-modal .post-actions .file-upload-btn,
   #edit-post-modal .post-actions .post-btn {
     width: 100%;
     text-align: center;
     padding: 8px 12px;
   }
-  
+
   #edit-post-modal .post-actions .image-actions {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   #edit-post-modal .post-actions .image-actions button {
     flex: 1;
     margin: 0 5px;
@@ -794,7 +794,7 @@ input[type="file"] {
   font-weight: bold;
 }
 
-[data-theme="dark"] .comment-avatar{
+[data-theme="dark"] .comment-avatar {
   background-color: var(--comment-bg-dark);
 }
 
@@ -964,8 +964,8 @@ input[type="file"] {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background-color: rgba(0, 0, 0, 0.9);
   z-index: 1100;
   align-items: center;
@@ -976,8 +976,8 @@ input[type="file"] {
 .story-viewer-content {
   width: 100%;
   height: 100%;
-  max-width: 400px;
-  max-height: 700px;
+  max-width: 360px;
+  max-height: 680px;
   position: relative;
   transition: transform 0.3s ease;
 }
@@ -1035,7 +1035,7 @@ input[type="file"] {
 .story-display img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 /* Add to your style.css */
@@ -1050,7 +1050,7 @@ input[type="file"] {
 }
 
 .story-progress-bar::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
