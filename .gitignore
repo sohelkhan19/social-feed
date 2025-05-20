@@ -2,3 +2,6 @@
 firebase.js
 config.js
 firebase-debug.log
+
+# Firebase cache and local settings
+.firebase/
