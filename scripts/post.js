@@ -22,6 +22,8 @@ import {
 const auth = getAuth(app);
 const db = getFirestore(app);
 let currentUser = null;
+let currentEditingPostId = null;
+let currentEditingImageUrl = null;
 
 // ✅ Your Cloudinary config
 const CLOUD_NAME = "do0do4mft";
@@ -58,18 +60,53 @@ function closePostModal() {
   document.getElementById("post-modal").style.display = "none";
 }
 
+// Edit Post Modal Functions
+window.openEditPostModal = function(postId, currentText, currentImageUrl) {
+  currentEditingPostId = postId;
+  currentEditingImageUrl = currentImageUrl;
+  
+  document.getElementById('edit-post-text').value = currentText;
+  
+  const editImagePreview = document.getElementById('edit-image-preview');
+  if (currentImageUrl) {
+    editImagePreview.innerHTML = `<img src="${currentImageUrl}" alt="Current Image">`;
+    editImagePreview.style.display = 'block';
+    document.getElementById('image-actions').style.display = 'flex';
+  } else {
+    editImagePreview.style.display = 'none';
+    document.getElementById('image-actions').style.display = 'none';
+  }
+  
+  document.getElementById('edit-post-modal').style.display = 'flex';
+};
+
+window.closeEditPostModal = function() {
+  document.getElementById('edit-post-modal').style.display = 'none';
+  currentEditingPostId = null;
+  currentEditingImageUrl = null;
+  document.getElementById('edit-post-image').value = '';
+};
+
+window.removeImage = function() {
+  currentEditingImageUrl = null;
+  document.getElementById('edit-image-preview').style.display = 'none';
+  document.getElementById('edit-image-preview').innerHTML = '';
+  document.getElementById('image-actions').style.display = 'none';
+};
+
 // Story Modal Functions
 function openStoryModal() {
   document.getElementById("story-modal").style.display = "flex";
 }
 
-// function closeStoryModal() {
-//   document.getElementById("story-modal").style.display = "none";
-//   document.getElementById("story-preview").style.display = "none";
-//   document.getElementById("story-preview").innerHTML = "";
-//   document.getElementById("story-image").value = "";
-// }
+window.closeStoryModal = function () {
+  document.getElementById("story-modal").style.display = "none";
+  document.getElementById("story-preview").style.display = "none";
+  document.getElementById("story-preview").innerHTML = "";
+  document.getElementById("story-image").value = "";
+};
 
+// Story Viewer Functions
 // Story Viewer Functions
 function viewStory(story) {
   const viewer = document.getElementById("story-viewer");
@@ -77,6 +114,15 @@ function viewStory(story) {
   const storyUserName = document.querySelector(".story-user-name");
   const storyUserAvatar = document.querySelector(".story-user-avatar");
   const storyTime = document.querySelector(".story-time");
+
+  // Clear any existing timeout to prevent multiple timers
+  if (window.storyViewerTimeout) {
+    clearTimeout(window.storyViewerTimeout);
+  }
+
+  // Reset progress bar
+  const progressBar = viewer.querySelector('.story-progress-bar');
+  progressBar.innerHTML = '<div class="progress"></div>';
 
   storyImage.src = story.imageUrl;
   storyUserName.textContent = story.user.name;
@@ -90,24 +136,29 @@ function viewStory(story) {
 
   viewer.style.display = "flex";
 
-  // Auto-close after 8 seconds (like Instagram)
-  setTimeout(() => {
+  // Start progress bar animation
+  const progress = progressBar.querySelector('.progress');
+  progress.style.animation = 'progress 5s linear forwards';
+
+  // Set a consistent 5-second timeout for auto-closing
+  window.storyViewerTimeout = setTimeout(() => {
     if (viewer.style.display === "flex") {
       closeStoryViewer();
     }
-  }, 8000);
+  }, 5000); // 5000 milliseconds = 5 seconds
 }
 
 window.closeStoryViewer = function () {
+  // Clear the timeout when manually closing
+  if (window.storyViewerTimeout) {
+    clearTimeout(window.storyViewerTimeout);
+  }
   document.getElementById("story-viewer").style.display = "none";
-};
-
-window.closeStoryModal = function () {
-  document.getElementById("story-modal").style.display = "none";
 };
 
 // 🖼️ Image Preview
 function setupImagePreview() {
+  // Post image preview
   const fileInput = document.getElementById("post-image");
   const imagePreview = document.getElementById("image-preview");
 
@@ -125,6 +176,25 @@ function setupImagePreview() {
     } else {
       imagePreview.style.display = "none";
       imagePreview.innerHTML = "";
+    }
+  });
+
+  // Edit post image preview
+  const editFileInput = document.getElementById('edit-post-image');
+  const editImagePreview = document.getElementById('edit-image-preview');
+
+  editFileInput.addEventListener('change', function(e) {
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function(event) {
+        editImagePreview.innerHTML = `<img src="${event.target.result}" alt="Preview">`;
+        editImagePreview.style.display = 'block';
+        document.getElementById('image-actions').style.display = 'flex';
+      };
+
+      reader.readAsDataURL(file);
     }
   });
 
@@ -254,6 +324,107 @@ window.submitPost = async () => {
   closePostModal();
 };
 
+// 🖊️ Submit edited post
+window.submitEditPost = async function() {
+  const newText = document.getElementById('edit-post-text').value;
+  const imageFile = document.getElementById('edit-post-image').files[0];
+  let newImageUrl = currentEditingImageUrl;
+
+  if (newText && newText.length > 1500) {
+    alert("Post content is too long. Maximum 1500 characters allowed.");
+    return;
+  }
+
+  if (!newText && !newImageUrl && !imageFile) {
+    alert("Post cannot be empty. Please add text or an image.");
+    return;
+  }
+
+  // Upload new image if selected
+  if (imageFile) {
+    const formData = new FormData();
+    formData.append("file", imageFile);
+    formData.append("upload_preset", UPLOAD_PRESET);
+
+    try {
+      // Show loading state
+      const saveBtn = document.querySelector("#edit-post-modal .post-btn");
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      saveBtn.disabled = true;
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+      if (data.secure_url) {
+        newImageUrl = data.secure_url;
+      } else {
+        throw new Error("Upload failed");
+      }
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      alert("Image upload failed. Please try again.");
+      return;
+    }
+  }
+
+  try {
+    const postRef = doc(db, "posts", currentEditingPostId);
+    await setDoc(postRef, {
+      text: newText,
+      imageUrl: newImageUrl,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+
+    closeEditPostModal();
+  } catch (error) {
+    console.error("Error updating post:", error);
+    alert("Failed to update post. Please try again.");
+  } finally {
+    // Reset button state
+    const saveBtn = document.querySelector("#edit-post-modal .post-btn");
+    saveBtn.innerHTML = "Save Changes";
+    saveBtn.disabled = false;
+  }
+};
+
+// 🗑️ Delete Post
+window.deletePost = async function(postId) {
+  if (confirm("Are you sure you want to delete this post? This action cannot be undone.")) {
+    try {
+      // First delete all associated likes
+      const likesQuery = query(
+        collection(db, "likes"),
+        where("postId", "==", postId)
+      );
+      const likesSnapshot = await getDocs(likesQuery);
+      likesSnapshot.forEach(async (likeDoc) => {
+        await deleteDoc(likeDoc.ref);
+      });
+
+      // Then delete all associated comments
+      const commentsQuery = query(
+        collection(db, "comments"),
+        where("postId", "==", postId)
+      );
+      const commentsSnapshot = await getDocs(commentsQuery);
+      commentsSnapshot.forEach(async (commentDoc) => {
+        await deleteDoc(commentDoc.ref);
+      });
+
+      // Finally delete the post itself
+      await deleteDoc(doc(db, "posts", postId));
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post. Please try again.");
+    }
+  }
+};
+
 // 📡 Listen for comments on a post
 function listenToComments(postId, commentsContainer) {
   const q = query(
@@ -329,7 +500,6 @@ function listenToPosts() {
 }
 
 // 🏰 Load Stories
-// Update the loadStories function to use real data
 function loadStories() {
   const storiesContainer = document.querySelector(".stories");
   const now = new Date();
@@ -405,6 +575,24 @@ async function renderPost(docSnap) {
       </div>
       <div class="post-more">
         <i class="fas fa-ellipsis-h"></i>
+        <div class="post-options" style="display: none;">
+          ${
+            post.user.uid === currentUser.uid
+              ? `
+              <div class="post-option" onclick="openEditPostModal('${postId}', '${post.text.replace(/'/g, "\\'")}', '${post.imageUrl || ''}')">
+                <i class="fas fa-edit"></i> Edit
+              </div>
+              <div class="post-option delete-option" onclick="deletePost('${postId}')">
+                <i class="fas fa-trash"></i> Delete
+              </div>
+              `
+              : `
+              <div class="post-option" onclick="reportPost('${postId}')">
+                <i class="fas fa-flag"></i> Report
+              </div>
+              `
+          }
+        </div>
       </div>
     </div>
     <div class="post-content">
@@ -453,6 +641,23 @@ async function renderPost(docSnap) {
       </div>
     </div>
   `;
+
+  // Add toggle functionality for post options dropdown
+  const postMoreBtn = div.querySelector('.post-more');
+  const postOptions = div.querySelector('.post-options');
+  
+  postMoreBtn.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent event bubbling
+    const isVisible = postOptions.style.display === 'block';
+    postOptions.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // Close dropdown when clicking elsewhere
+  document.addEventListener('click', (e) => {
+    if (!postMoreBtn.contains(e.target)) {
+      postOptions.style.display = 'none';
+    }
+  });
 
   // Add toggle functionality for long text
   if (post.text && post.text.length > 200) {
@@ -503,7 +708,7 @@ async function renderPost(docSnap) {
     likeBtn.onclick = () => (liked ? unlikePost(postId) : likePost(postId));
   });
 
-  // 🔁 Real-time comment count listener - Add this section
+  // 🔁 Real-time comment count listener
   const commentCountQuery = query(
     collection(db, "comments"),
     where("postId", "==", postId)
