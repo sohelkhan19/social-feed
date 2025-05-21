@@ -34,6 +34,21 @@
           <input type="text" placeholder="Search..." />
         </div>
         <div class="navbar-actions">
+          <div class="notification-container">
+            <div class="notification-icon" onclick="toggleNotifications()">
+              <i class="fas fa-bell"></i>
+              <span class="notification-badge" id="notification-badge">0</span>
+            </div>
+            <div class="notification-dropdown" id="notification-dropdown">
+              <div class="notification-header">
+                <h4>Notifications</h4>
+                <button onclick="markAllNotificationsAsRead()">
+                  Mark all as read
+                </button>
+              </div>
+              <div class="notification-list" id="notification-list"></div>
+            </div>
+          </div>
           <div id="user-info" class="user-info">
             <span class="user-avatar">👤</span>
           </div>

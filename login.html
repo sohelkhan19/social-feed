@@ -2,16 +2,236 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - Social Feed</title>
-  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --dark: #212529;
+      --light: #f8f9fa;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    /* Enhanced Particles Background */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(1px);
+    }
+    
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 40px 30px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
+      color: white;
+    }
+    
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #fff, #e0e0e0);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      opacity: 0.8;
+      margin-bottom: 30px;
+      font-size: 1rem;
+    }
+    
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 15px 20px;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .input-group input::placeholder {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    button {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+    }
+    
+    .register-link {
+      margin-top: 20px;
+      display: block;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .register-link a {
+      color: white;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+    
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 30px 20px;
+      }
+      
+      .logo {
+        font-size: 2rem;
+      }
+      
+      button, .input-group input {
+        padding: 12px 15px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Login to Social Feed</h1>
-  <input type="email" id="login-email" placeholder="Email">
-  <input type="password" id="login-password" placeholder="Password">
-  <button onclick="handleLogin()">Login</button>
-  <p>Don't have an account? <a href="register.html">Register here</a></p>
+  <div class="particles" id="particles"></div>
+  
+  <div class="login-card">
+    <div class="logo">SocialFeed</div>
+    <p class="subtitle">Welcome back to your community</p>
+    
+    <div class="input-group">
+      <input type="email" id="login-email" placeholder="Email Address">
+    </div>
+    
+    <div class="input-group">
+      <input type="password" id="login-password" placeholder="Password">
+    </div>
+    
+    <button onclick="handleLogin()">Login</button>
+    
+    <p class="register-link">Don't have an account? <a href="register.html">Register here</a></p>
+  </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    // Enhanced Particle Animation
+    document.addEventListener('DOMContentLoaded', function() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = window.innerWidth < 768 ? 20 : 40; // Fewer but larger particles
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Larger size range (5px to 15px)
+        const size = Math.random() * 7 + 3;
+        const posX = Math.random() * window.innerWidth;
+        const posY = Math.random() * window.innerHeight;
+        
+        // Faster animation (5s to 15s duration)
+        const duration = Math.random() * 10 + 5;
+        const delay = Math.random() * 3;
+        
+        // More visible particles
+        const opacity = Math.random() * 0.5 + 0.1;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}px`;
+        particle.style.top = `${posY}px`;
+        particle.style.opacity = opacity;
+        particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+        particle.style.boxShadow = `0 0 ${size*2}px ${size/2}px rgba(255, 255, 255, ${opacity/2})`;
+        
+        particlesContainer.appendChild(particle);
+      }
+      
+      // More dramatic floating animation
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0) translateX(0);
+          }
+          25% {
+            transform: translateY(-40px) translateX(20px);
+          }
+          50% {
+            transform: translateY(0) translateX(40px);
+          }
+          75% {
+            transform: translateY(40px) translateX(20px);
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    });
+  </script>
+  
   <script type="module">
     import { login } from './scripts/auth.js';
 
@@ -20,10 +240,21 @@
       const password = document.getElementById('login-password').value;
       try {
         const user = await login(email, password);
-        alert(`Welcome, ${user.email}`);
-        window.location.href = 'index.html';
+        Swal.fire({
+          title: 'Welcome back!',
+          text: `Logged in as ${user.email}`,
+          icon: 'success',
+          confirmButtonText: 'Continue'
+        }).then(() => {
+          window.location.href = 'index.html';
+        });
       } catch (e) {
-        alert(e.message);
+        Swal.fire({
+          title: 'Login Failed',
+          text: e.message,
+          icon: 'error',
+          confirmButtonText: 'Try Again'
+        });
       }
     };
   </script>

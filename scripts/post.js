@@ -4,14 +4,17 @@ import {
   setDoc,
   deleteDoc,
   getDocs,
+  getDoc,
   where,
   query,
   orderBy,
+  limit,
   onSnapshot,
   serverTimestamp,
   collection,
   addDoc,
   getFirestore,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
   getAuth,
@@ -224,12 +227,18 @@ function setupImagePreview() {
 }
 
 // 🔐 Auth check
+// 🔐 Auth check
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    currentUser = user;
+    currentUser = {
+      uid: user.uid,
+      email: user.email,
+      name: user.email.split("@")[0] // Add name for consistency
+    };
+
     document.getElementById("user-info").innerHTML = `
-      <span>${user.email.split("@")[0]}</span>
-      <span class="user-avatar">${user.email.charAt(0).toUpperCase()}</span>
+      <span>${currentUser.name}</span>
+      <span class="user-avatar">${currentUser.name.charAt(0).toUpperCase()}</span>
     `;
 
     // Initialize theme and image preview after auth
@@ -239,6 +248,7 @@ onAuthStateChanged(auth, (user) => {
     // Load content
     listenToPosts();
     loadStories();
+    listenToNotifications(); // Now safe to call after currentUser is set
 
     // Hide loading skeletons
     setTimeout(() => {
@@ -248,6 +258,138 @@ onAuthStateChanged(auth, (user) => {
     window.location.href = "login.html";
   }
 });
+
+function renderNotifications(notifications) {
+  const container = document.getElementById("notification-list");
+  const badge = document.getElementById("notification-badge");
+  
+  if (!container || !badge) return;
+
+  // Count unread notifications
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+  badge.textContent = unreadCount > 0 ? unreadCount : "";
+  badge.style.display = unreadCount > 0 ? "flex" : "none";
+
+  if (notifications.length === 0) {
+    container.innerHTML = '<div class="no-notifications">No notifications yet</div>';
+    return;
+  }
+
+  container.innerHTML = notifications.map(notification => `
+    <div class="notification-item ${notification.isRead ? '' : 'unread'}" 
+         onclick="handleNotificationClick('${notification.id}', '${notification.type}', '${notification.postID || ''}')">
+      <div class="notification-content">
+        <div class="notification-avatar">
+          ${notification.senderName?.charAt(0) || 'U'}
+        </div>
+        <div class="notification-text">
+          <div>${generateNotificationText(notification)}</div>
+          <div class="notification-time">
+            ${formatTime(notification.createdAt?.toDate() || new Date())}
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function generateNotificationText(notification) {
+  const sender = notification.senderName || "Someone";
+  switch(notification.type) {
+    case "like":
+      return `${sender} liked your post`;
+    case "comment":
+      return `${sender} commented on your post`;
+    case "follow":
+      return `${sender} started following you`;
+    default:
+      return "New activity";
+  }
+}
+
+// Listen for new notifications
+function listenToNotifications() {
+  // Check if user is authenticated
+  if (!currentUser || !currentUser.uid) {
+    console.warn("Cannot listen to notifications - no authenticated user");
+    return null;
+  }
+
+  const q = query(
+    collection(db, "notifications"),
+    where("recipientUID", "==", currentUser.uid),
+    orderBy("createdAt", "desc"),
+    limit(20)
+  );
+
+  return onSnapshot(q, (snapshot) => {
+    const notifications = [];
+    snapshot.forEach((doc) => {
+      notifications.push({ id: doc.id, ...doc.data() });
+    });
+    renderNotifications(notifications);
+  });
+}
+
+// Toggle notifications dropdown
+window.toggleNotifications = function() {
+  const dropdown = document.getElementById("notification-dropdown");
+  if (dropdown.style.display === "block") {
+    dropdown.style.display = "none";
+  } else {
+    dropdown.style.display = "block";
+    // Refresh notifications when dropdown is opened
+    // (the real-time listener will handle updates)
+  }
+};
+
+// Handle notification click
+window.handleNotificationClick = async function(notificationId, type, postId) {
+  // Mark as read
+  await setDoc(doc(db, "notifications", notificationId), {
+    isRead: true
+  }, { merge: true });
+
+  // Handle action based on type
+  switch(type) {
+    case "like":
+    case "comment":
+      if (postId) {
+        // Scroll to the post
+        const postElement = document.querySelector(`.post[data-id="${postId}"]`);
+        if (postElement) {
+          postElement.scrollIntoView({ behavior: "smooth" });
+          postElement.classList.add("highlight");
+          setTimeout(() => postElement.classList.remove("highlight"), 2000);
+        }
+      }
+      break;
+    case "follow":
+      // Future: Open user profile
+      break;
+  }
+
+  // Close dropdown
+  document.getElementById("notification-dropdown").style.display = "none";
+};
+
+// Mark all notifications as read
+window.markAllNotificationsAsRead = async function() {
+  const q = query(
+    collection(db, "notifications"),
+    where("recipientUID", "==", currentUser.uid),
+    where("isRead", "==", false)
+  );
+
+  const snapshot = await getDocs(q);
+  const batch = writeBatch(db);
+
+  snapshot.forEach(doc => {
+    batch.update(doc.ref, { isRead: true });
+  });
+
+  await batch.commit();
+};
 
 // 🚪 Logout
 window.logout = async () => {
@@ -860,6 +1002,24 @@ function formatTime(date) {
 // ❤️ Like post
 async function likePost(postId) {
   const likeRef = doc(db, "likes", `${postId}_${currentUser.uid}`);
+
+  // Get post author first
+  const postSnapshot = await getDoc(doc(db, "posts", postId));
+  const postAuthorUID = postSnapshot.data().user.uid;
+
+  // Only notify if liking someone else's post
+  if (postAuthorUID !== currentUser.uid) {
+    await addDoc(collection(db, "notifications"), {
+      type: "like",
+      senderUID: currentUser.uid,
+      senderName: currentUser.name,
+      recipientUID: postAuthorUID,
+      postID: postId,
+      isRead: false,
+      createdAt: serverTimestamp()
+    });
+  }
+
   await setDoc(likeRef, {
     postId,
     userId: currentUser.uid,
@@ -887,16 +1047,35 @@ window.submitComment = async (postId, commentInputElement) => {
   }
 
   try {
-    await addDoc(collection(db, "comments"), {
+    // Add comment
+    const commentRef = await addDoc(collection(db, "comments"), {
       postId,
       text: commentText,
       createdAt: serverTimestamp(),
       user: {
         uid: currentUser.uid,
         email: currentUser.email,
-        name: currentUser.email.split("@")[0],
+        name: currentUser.name
       },
     });
+
+    // Get post author
+    const postSnapshot = await getDoc(doc(db, "posts", postId));
+    const postAuthorUID = postSnapshot.data().user.uid;
+
+    // Only notify if commenting on someone else's post
+    if (postAuthorUID !== currentUser.uid) {
+      await addDoc(collection(db, "notifications"), {
+        type: "comment",
+        senderUID: currentUser.uid,
+        senderName: currentUser.name,
+        recipientUID: postAuthorUID,
+        postID: postId,
+        commentID: commentRef.id,
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
+    }
 
     // Clear the comment input
     commentInputElement.value = "";
@@ -909,6 +1088,22 @@ window.submitComment = async (postId, commentInputElement) => {
     });
   }
 };
+
+// Follow user notification
+async function followUser(targetUID) {
+  await setDoc(doc(db, "follows", `${currentUser.uid}_${targetUID}`), {
+    createdAt: serverTimestamp()
+  });
+
+  // Send notification
+  await addDoc(collection(db, "notifications"), {
+    type: "follow",
+    senderUID: currentUser.uid,
+    recipientUID: targetUID,
+    isRead: false,
+    createdAt: serverTimestamp()
+  });
+}
 
 // Add story submission function
 window.submitStory = async () => {
